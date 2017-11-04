@@ -1,0 +1,318 @@
+unit uPublicFun;
+
+interface
+
+uses
+  SysUtils, Classes, ADODB, DB, StdCtrls, StrUtils, uLoadSaveImg;
+    //
+    function maxCar_number(ADOQueryXA:TADOQuery):integer;
+    function maxTrainTotalH(ADODataSetMDB2:TADODataSet):Integer;
+    function compareTrain2car_number(ADODataSetMDB2:TADODataSet;
+                                                ADOQueryXA:TADOQuery):Boolean;
+    function dest(ADODataSetXA:TADODataSet;id_masterWStrA:WideString):integer;
+    function addTrainOrder(ADODataSetMDB1,ADODataSetMDB2:TADODataSet;
+                                ADOQueryXA:TADOQuery;idMaster:integer):Boolean;
+    function myExecSQL(ADOQueryXA:TADOQuery;sqlWStrA:WideString):Boolean;
+    function addCar_nmuber(ADODataSetXA:TADODataSet;
+                                ADOQueryXA:TADOQuery;train_number:integer):Boolean;
+    //
+    function writeLogFun(logPathStrW:WideString;logHistoryT:TStrings):Boolean;
+    //
+    function getCarInfo(train_maxNumStr:WideString;ADOQueryX:TADOQuery):WideString;
+    function savePic2DB(filePathStr,picTypeStr:WideString;
+                                                ADODataSetXA:TADODataSet;
+                        train_numberStrA,seriary_numberStrA,
+                                pTimeStrA,photoTimeStrA:WideString):Boolean;
+    //no use
+    function convertTimeFormate(timeStrA:string):WideString;
+
+implementation
+
+
+function dest(ADODataSetXA:TADODataSet;id_masterWStrA:WideString):integer;
+var
+  destInt:integer;
+begin
+  ADODataSetXA.Close;
+  ADODataSetXA.CommandText:='';
+  ADODataSetXA.CommandText:='select DISTINCT destination from trainmaster where id_master='
+                        +id_masterWStrA;
+  ADODataSetXA.Open;
+
+  destInt:=ADODataSetXA.Fields[0].AsInteger;
+
+  Result:=destInt;
+end;
+
+function myExecSQL(ADOQueryXA:TADOQuery;sqlWStrA:WideString):Boolean;
+begin
+  ADOQueryXA.Close;
+  ADOQueryXA.SQL.Clear;
+  ADOQueryXA.SQL.Text:=sqlWStrA;
+  ADOQueryXA.ExecSQL;
+
+  Result:=True;
+end;
+
+function addTrainOrder(ADODataSetMDB1,ADODataSetMDB2:TADODataSet;
+                                ADOQueryXA:TADOQuery;idMaster:integer):Boolean;
+var
+  recI2,I2:Integer;
+  snStr,cNumStr,tNumStr,cMarqueStr:WideString;
+  lableweightStr,selfweightStr:WideString;
+  //
+  outFlagStr:WideString;
+  time_rportStr:WideString;
+  //
+  sqlTempStr:WideString;
+  //2008.1.1 add year-month level tree
+  yearStr,monthStr,newMonthStr:WideString;
+  i,j:Integer;
+  monthInt:integer;
+begin
+  //
+  ADODataSetMDB1.Close;
+  ADODataSetMDB1.CommandText:='select train_no,number,id_master,'
+                        +'time_report,type,lableweight,selfweight'
+                        +' from traintotalh where id_master>'
+                        +''+IntToStr(idMaster)+'';
+  ADODataSetMDB1.Open;
+  //
+  recI2:=ADODataSetMDB1.RecordCount;
+  //
+  for I2:=0 to recI2-1 do
+  begin
+    snStr:=ADODataSetMDB1.Fields[0].AsString;
+    cNumStr:=ADODataSetMDB1.Fields[1].AsString;
+    time_rportStr:=ADODataSetMDB1.Fields[3].AsString;
+    cMarqueStr:=ADODataSetMDB1.Fields[4].AsString;
+    lableweightStr:=ADODataSetMDB1.Fields[5].AsString;
+    selfweightStr:=ADODataSetMDB1.Fields[6].AsString;
+    //2008.1.1
+    i:=pos('-',time_rportStr);
+    yearStr:=LeftStr(time_rportStr,4);
+    monthStr:=copy(time_rportStr,i+1,2);
+    j:=pos('-',monthStr);
+    if j<>0 then
+    begin
+      newMonthStr:=copy(monthStr,1,1);
+    end
+    else
+    begin
+      monthInt:=StrToInt(monthStr);
+      newMonthStr:=IntToStr(monthInt);
+    end;
+    //
+    tNumStr:=ADODataSetMDB1.FieldByName('id_master').AsString;
+    if dest(ADODataSetMDB2,tNumStr)=0 then outFlagStr:='up'
+          else outFlagStr:='down';     
+    //insert trainOrder
+    sqlTempStr:='INSERT INTO trainOrder(seriary_number,car_number,'
+        +'train_number,past_time,car_marque,carry_weight1,self_weight1,outFlag'
+        //2008.1.1
+        +',year_level2,month_level3'
+        +') values('
+        +''+snStr+''+','+''''+cNumStr+''''+','+''+tNumStr+''+','
+        +''''+time_rportStr+''''+','
+        +''''+cMarqueStr+''''+','
+        +lableweightStr+','
+        +selfweightStr+','
+        +''''+outFlagStr+''''+','
+        //2008.1.1
+        +''''+yearStr+''''+','
+        +''''+newMonthStr+''''
+        +')';
+    myExecSQL(ADOQueryXA,sqlTempStr);
+      
+    ADODataSetMDB1.Next;
+  end;
+
+  Result:=True;
+end;
+
+function addCar_nmuber(ADODataSetXA:TADODataSet;
+                                ADOQueryXA:TADOQuery;train_number:integer):Boolean;
+var
+  recI3,I3:Integer;
+  snStr,cNumStr,tNumStr,cMarqueStr:WideString;
+  //
+  past_timeStr:WideString;
+  //
+  sqlTempStr:WideString;
+begin
+ //
+  ADODataSetXA.Close;
+  ADODataSetXA.CommandText:='select seriary_number,car_number,'
+                        +'train_number,past_time,car_marque from trainOrder'
+                        +' where train_number>'
+                        +''+IntToStr(train_number)+'';
+  ADODataSetXA.Open;
+  //
+  recI3:=ADODataSetXA.RecordCount;
+  for I3:=0 to recI3-1 do
+  begin
+    snStr:=ADODataSetXA.Fields[0].AsString;
+    cNumStr:=ADODataSetXA.Fields[1].AsString;
+    tNumStr:=ADODataSetXA.Fields[2].AsString;
+    past_timeStr:=ADODataSetXA.Fields[3].AsString;
+    cMarqueStr:=ADODataSetXA.Fields[4].AsString;
+    //insert Car_nmuber
+    sqlTempStr:='INSERT INTO Car_number(seriary_number,car_number,'
+                        +'train_number,past_time,car_marque) values('
+                        +''+snStr+''+','+''''+cNumStr+''''+','+''+tNumStr+''+','
+                        +''''+past_timeStr+''''+','
+                        +''''+cMarqueStr+''''+')';
+    myExecSQL(ADOQueryXA,sqlTempStr);
+      
+    ADODataSetXA.Next;
+  end;
+
+  Result:=True;
+end;
+
+//
+function maxCar_number(ADOQueryXA:TADOQuery):integer;
+var
+  car_NO:Integer;
+begin
+  ADOQueryXA.Close;
+  ADOQueryXA.SQL.Clear;
+  ADOQueryXA.SQL.Text:='select Max(train_number) from car_number';
+  ADOQueryXA.Open;
+
+  car_NO:=ADOQueryXA.Fields[0].AsInteger;
+
+  Result:=car_NO;
+end;
+
+function maxTrainTotalH(ADODataSetMDB2:TADODataSet):Integer;
+var
+  train_NO:integer;
+begin
+  ADODataSetMDB2.Close;
+  ADODataSetMDB2.CommandText:='';
+  ADODataSetMDB2.CommandText:='select Max(id_master) from traintotalh';
+  ADODataSetMDB2.Open;
+
+  train_NO:=ADODataSetMDB2.Fields[0].AsInteger;
+
+  Result:=train_NO;
+end;
+
+function compareTrain2car_number(ADODataSetMDB2:TADODataSet;
+                                                ADOQueryXA:TADOQuery):Boolean;
+begin
+  if maxTrainTotalH(ADODataSetMDB2)-maxCar_number(ADOQueryXA)=0 then
+  begin
+    Result:=False;
+  end
+  else
+  begin
+    Result:=True;
+  end;
+end;
+
+//
+function writeLogFun(logPathStrW:WideString;logHistoryT:TStrings):Boolean;
+var
+  CStrTemp:TStringList;
+begin
+  CStrTemp:=TStringList.Create;
+  //
+  if FileExists(logPathStrW)then
+  begin
+    CStrTemp.LoadFromFile(logPathStrW);
+  end
+  else
+  begin
+    CStrTemp.Add('           *****************************************');
+    CStrTemp.Add('           ***  Cationsoft ServoSystem Log File  ***');
+    CStrTemp.Add('           *****************************************');
+    CStrTemp.Add(EmptyStr);
+    CStrTemp.Add(EmptyStr);
+  end;
+  CStrTemp.AddStrings(logHistoryT);
+  CStrTemp.Add(EmptyStr);
+  CStrTemp.Add('==============================================================');
+  CStrTemp.SaveToFile(logPathStrW);
+  //
+  CStrTemp.Destroy;
+  //
+  Result:=True;
+end;
+
+//
+function getCarInfo(train_maxNumStr:WideString;ADOQueryX:TADOQuery):WideString;
+var
+  pTimeStr:WideString;
+begin
+  ADOQueryX.Close;
+  ADOQueryX.SQL.Clear;
+  ADOQueryX.SQL.Text:='select DISTINCT past_time from trainOrder where train_number='
+                                +train_maxNumStr;
+  ADOQueryX.Open;
+
+  //
+  pTimeStr:=ADOQueryX.Fields[0].AsString;
+  //
+  Result:=pTimeStr;
+end;
+//
+function savePic2DB(filePathStr,picTypeStr:WideString;
+                                ADODataSetXA:TADODataSet;
+                        train_numberStrA,seriary_numberStrA,
+                                pTimeStrA,photoTimeStrA:WideString):Boolean;
+var
+  TS: TMemoryStream;
+  LSI: TLSImg;
+begin
+
+  //
+  LSI := TLSImg.Create;
+  if LSI.GetImgType(picTypeStr) <> 0 then
+  begin
+    TS := TMemoryStream.Create;
+    LSI.Picture.Graphic.LoadFromFile(filePathStr);
+    LSI.SaveToStream(TS);
+    with ADODataSetXA do
+    begin
+      try
+        Append;
+        FieldByName('train_number').Value:=train_numberStrA;
+        FieldByName('seriary_number').Value:=seriary_numberStrA;
+        FieldByName('past_time').Value:=pTimeStrA;
+        //pic
+        (FieldByName('pic_jpg') as TBlobField).LoadFromStream(TS);
+        //
+        FieldByName('photo_time').Value:=photoTimeStrA;
+        Post;
+      except
+        raise
+      end;
+    end;
+    TS.Free;
+  end;
+  LSI.Free;
+  //
+  Result:=True;
+end;
+
+//no use
+function convertTimeFormate(timeStrA:string):WideString;
+var
+  yearStr,monthStr,dayStr:string;
+  hourStr,minuteStr,secondStr:string;
+begin
+  yearStr:=LeftStr(timeStrA,4);
+  monthStr:=copy(timeStrA,6,2);
+  dayStr:=copy(timeStrA,9,2);
+  //
+  hourStr:=copy(timeStrA,12,2);
+  minuteStr:=copy(timeStrA,15,2);
+  secondStr:=RightStr(timeStrA,2);
+  //
+  Result:=yearStr+'年'+monthStr+'月'+dayStr+'日'
+                +hourStr+'时'+minuteStr+'分'+secondStr+'秒';
+end;
+
+end.

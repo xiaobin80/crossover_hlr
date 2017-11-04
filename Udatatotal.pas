@@ -1,0 +1,195 @@
+unit Udatatotal;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, ComCtrls, Grids, DBGrids, StdCtrls, DB, ADODB, Printers,
+  StrUtils;
+
+type
+  Tfrm_sa = class(TForm)
+    Panel1: TPanel;
+    Panel2: TPanel;
+    StatusBar1: TStatusBar;
+    GroupBox1: TGroupBox;
+    GroupBox2: TGroupBox;
+    DateTimePicker1: TDateTimePicker;
+    DateTimePicker2: TDateTimePicker;
+    DataSource1: TDataSource;
+    ADODataSet1: TADODataSet;
+    pnl_btn: TPanel;
+    btn_find: TButton;
+    btn_print2: TButton;
+    DTP_sTime: TDateTimePicker;
+    DTP_oTime: TDateTimePicker;
+    Label5: TLabel;
+    DBGrid2: TDBGrid;
+    Label1: TLabel;
+    cmb_badCar: TComboBox;
+    ADODataSet1train_number: TIntegerField;
+    ADODataSet1seriary_number: TIntegerField;
+    ADODataSet1car_number: TStringField;
+    ADODataSet1car_marque: TStringField;
+    ADODataSet1carry_weight1: TBCDField;
+    ADODataSet1self_weight1: TBCDField;
+    ADODataSet1past_time: TWideStringField;
+    ADODataSet1outFlag: TWideStringField;
+    ADODataSet1badFlag: TBooleanField;
+    ADODataSet1sn: TAutoIncField;
+    ADOConnection1: TADOConnection;
+    FindData: TADODataSet;
+    Label2: TLabel;
+    edtCarNum: TEdit;
+    procedure FormShow(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure btn_findClick(Sender: TObject);
+    procedure btn_print2Click(Sender: TObject);
+  private
+    recCountInt:Integer;
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  frm_sa: Tfrm_sa;
+
+implementation
+uses
+  uPublicFuncMain;
+
+{$R *.dfm}
+
+procedure Tfrm_sa.FormShow(Sender: TObject);
+begin
+  ADODataSet1.Close;
+  ADODataSet1.CommandText:='select * from trainOrder order by past_time';
+  ADODataSet1.Open;
+end;
+
+procedure Tfrm_sa.FormCreate(Sender: TObject);
+var
+  pClockInt:integer;
+  curTimeInt:integer;
+  nowTimeStr:WideString;
+begin
+  //
+  DateTimePicker1.Date:=Date-1;
+  DateTimePicker2.Date:=Date;
+  //
+  nowTimeStr:=TimeToStr(now);
+  pClockInt:=pos(':',nowTimeStr);
+  curTimeInt:=StrToInt(LeftStr(nowTimeStr,pClockInt-1));
+  if curTimeInt>18 then
+  begin
+    DTP_sTime.Time:=StrToTime('18:00:00');
+    DTP_oTime.Time:=StrToTime('6:00:00');
+  end
+  else
+  begin
+    DTP_sTime.Time:=StrToTime('6:00:00');
+    DTP_oTime.Time:=StrToTime('18:00:00');
+  end;
+  //
+  StatusBar1.SimplePanel:=True;
+end;
+
+procedure Tfrm_sa.btn_findClick(Sender: TObject);
+var
+  sqlstr11,sqlstr12,sqlstr13,sqlstrA:string;
+  sqlStr21:WideString;
+  datestr1,datestr2:string;
+  //
+  badCarInt:Integer;
+  cmbIndexInt:Integer;
+  //
+  numberCarStr:WideString;
+  //
+  carNumStr:WideString;
+begin
+  //
+  badCarInt:=-1;
+  sqlstr11:='select * from trainOrder';
+  //
+  DataSource1.DataSet:=FindData;
+  //
+  datestr1:=DateToStr(DateTimePicker1.Date)+' '+TimeToStr(DTP_sTime.Time);
+  datestr2:=DateToStr(DateTimePicker2.Date)+' '+TimeToStr(DTP_oTime.Time);
+
+  sqlstr12:=' where past_time between '+''''+datestr1+''''+' and '+''''+datestr2+'''';
+
+  //2007.12.2
+  cmbIndexInt:=cmb_badCar.ItemIndex;
+  case cmbIndexInt of
+      0:
+      begin
+        badCarInt:=0;//badCar
+      end;
+      1:
+      begin
+        badCarInt:=1;//okCar
+      end;
+  end;
+
+  sqlstr13:=' and badFlag='+IntToStr(badCarInt);
+  //
+  carNumStr:=edtCarNum.Text;
+  sqlStr21:=' and car_number='+''+carNumStr+'';
+  //sqlStr22:=' car_number='+''+carNumStr+'';
+  //
+  if cmbIndexInt<>-1 then
+  begin
+    if edtCarNum.Text<>'' then
+    begin
+      sqlstrA:=sqlstr11+sqlstr12+sqlstr13+sqlStr21;
+    end
+    else
+    begin
+      sqlstrA:=sqlstr11+sqlstr12+sqlstr13;
+    end;
+  end
+  else
+  begin
+    if edtCarNum.Text<>'' then
+    begin
+      sqlstrA:=sqlstr11+sqlstr12+sqlStr21;
+    end
+    else
+    begin
+      sqlstrA:=sqlstr11+sqlstr12;
+    end;
+
+  end;
+  //
+  FindData.Close;
+  FindData.CommandText:=sqlstrA;
+  FindData.Open;
+  
+  recCountInt:=FindData.RecordCount;
+  //
+  case cmbIndexInt of
+      0:
+      begin
+        numberCarStr:=' 辆破损车'
+      end;
+      1:
+      begin
+        numberCarStr:=' 辆正常车'
+      end;
+      -1:
+      begin
+        numberCarStr:=' 辆车';
+      end;
+  end;
+  StatusBar1.SimpleText:='18点简报：'+datestr1+' 至 '+datestr2
+                                +'    共有 '+IntToStr(recCountInt)+numberCarStr;
+end;
+
+procedure Tfrm_sa.btn_print2Click(Sender: TObject);
+begin
+//
+  GridPrintA(FindData,DBGrid2);
+end;
+
+end.

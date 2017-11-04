@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TfrxReport Version="4.4.47" DotMatrixReport="False" IniFile="\Software\Fast Reports" PreviewOptions.Buttons="4095" PreviewOptions.Zoom="1" PrintOptions.Printer="Ô¤Éè" PrintOptions.PrintOnSheet="0" ReportOptions.CreateDate="39423.9469873032" ReportOptions.Description.Text="" ReportOptions.LastChange="39445.714005706" ScriptLanguage="PascalScript" ScriptText.Text="begin&#13;&#10;&#13;&#10;end." PropData="044C65667403E80003546F7002580844617461736574730100095661726961626C65730100055374796C650100">
+  <TfrxDataPage Name="Data" Height="1000" Left="0" Top="0" Width="1000"/>
+  <TfrxReportPage Name="Page1" Font.Charset="134" Font.Color="0" Font.Height="-13" Font.Name="ËÎÌå" Font.Style="0" Orientation="poLandscape" PaperWidth="297" PaperHeight="210" PaperSize="9" LeftMargin="0" RightMargin="0" TopMargin="0" BottomMargin="0" ColumnWidth="0" ColumnPositions.Text="" HGuides.Text="" VGuides.Text="">
+    <TfrxReportTitle Name="ReportTitle1" Height="241.88992" Left="0" Top="18.89765" Width="1122.52041">
+      <TfrxMemoView Name="Memo1" Align="baCenter" Left="427.08689" Top="7.55906" Width="268.34663" Height="37.7953" DisplayFormat.DecimalSeparator="." Font.Charset="1" Font.Color="0" Font.Height="-21" Font.Name="ËÎÌå" Font.Style="1" HAlign="haCenter" ParentFont="False" VAlign="vaCenter" Text="è½¦è¾†è¯¦ç»†ä¿¡æ¯"/>
+      <TfrxMemoView Name="MemoSN" Left="34.01577" Top="56.69295" Width="204.09462" Height="18.89765" DisplayFormat.DecimalSeparator="." Font.Charset="1" Font.Color="0" Font.Height="-13" Font.Name="ËÎÌå" Font.Style="0" ParentFont="False" VAlign="vaCenter" Text="38"/>
+      <TfrxMemoView Name="MemoCarNum" Left="34.01577" Top="90.70872" Width="204.09462" Height="18.89765" DisplayFormat.DecimalSeparator="." Font.Charset="1" Font.Color="0" Font.Height="-13" Font.Name="ËÎÌå" Font.Style="0" ParentFont="False" VAlign="vaCenter" Text="4846798"/>
+      <TfrxMemoView Name="MemoCarMarque" Left="34.01577" Top="128.50402" Width="204.09462" Height="18.89765" DisplayFormat.DecimalSeparator="." Font.Charset="1" Font.Color="0" Font.Height="-13" Font.Name="ËÎÌå" Font.Style="0" ParentFont="False" VAlign="vaCenter" Text="C64K"/>
+      <TfrxMemoView Name="MemoPastTime" Left="34.01577" Top="162.51979" Width="204.09462" Height="18.89765" DisplayFormat.DecimalSeparator="." Font.Charset="1" Font.Color="0" Font.Height="-13" Font.Name="ËÎÌå" Font.Style="0" ParentFont="False" VAlign="vaCenter" Text="2007-12-15 10:30"/>
+      <TfrxMemoView Name="MemoCarCondition" Left="899.52814" Top="162.51979" Width="192.75603" Height="18.89765" DisplayFormat.DecimalSeparator="." Font.Charset="1" Font.Color="0" Font.Height="-13" Font.Name="ËÎÌå" Font.Style="0" ParentFont="False" VAlign="vaCenter" Text="è½¦è¾†çŠ¶å†µ:è½¦è¾†è‰¯å¥½"/>
+    </TfrxReportTitle>
+    <TfrxPageFooter Name="PageFooter1" Height="45.35436" Left="0" Top="748.34694" Width="1122.52041">
+      <TfrxMemoView Name="MemoPrintTime" Left="907.0872" Top="15.11812" Width="204.09462" Height="18.89765" DisplayFormat.DecimalSeparator="." Font.Charset="1" Font.Color="0" Font.Height="-13" Font.Name="ËÎÌå" Font.Style="0" ParentFont="False" VAlign="vaCenter" Text="2007-12-15 10:30"/>
+      <TfrxMemoView Name="MemoUserName" Left="676.53587" Top="15.11812" Width="185.19697" Height="18.89765" DisplayFormat.DecimalSeparator="." Font.Charset="1" Font.Color="0" Font.Height="-13" Font.Name="ËÎÌå" Font.Style="0" ParentFont="False" VAlign="vaCenter" Text=""/>
+    </TfrxPageFooter>
+    <TfrxReportSummary Name="ReportSummary1" Height="404.40971" Left="0" Top="321.26005" Width="1122.52041">
+      <TfrxPictureView Name="PictureCar" Left="0" Top="0" Width="1122.52041" Height="234.33086" HightQuality="False"/>
+      <TfrxPictureView Name="PictureBadPoint" Align="baBottom" Left="0" Top="238.11039" Width="1122.52041" Height="166.29932" Center="True" HightQuality="False"/>
+    </TfrxReportSummary>
+  </TfrxReportPage>
+</TfrxReport>
